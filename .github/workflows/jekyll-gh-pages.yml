@@ -39,7 +39,7 @@ jobs:
             echo "base_href=/${REPO_NAME}/" >> "$GITHUB_OUTPUT"
           fi
       - name: Build website
-        run: npm run build -- --configuration production --base-href "${{ steps.pagespath.outputs.base_href }}"
+        run: npm run build -- --configuration production --base-href "/"
       - name: Preserve direct links and avoid Jekyll
         run: |
           touch dist/roundselect/browser/.nojekyll
