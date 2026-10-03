@@ -22,8 +22,8 @@
         <h1 id="hero-title">Text selection.<br /><span>A little more human.</span></h1>
         <p class="hero-description">A tiny visual detail, thoughtfully built. Smooth SVG highlights for real browser text selection — no text wrapping, no extra dependencies.</p>
         <div class="hero-actions">
-          <a class="button button-primary" href="#demo">Try the live demo <span aria-hidden="true">↘</span></a>
-          <a class="button button-quiet" href="downloads/rounded-selection.directive.ts" download="rounded-selection.directive.ts">Download directive <span aria-hidden="true">↓</span></a>
+          <a class="button button-primary" href="downloads/roundselect.zip" download="roundselect.zip">Download RoundSelect (.zip) <span aria-hidden="true">↓</span></a>
+          <a class="button button-quiet" href="#demo">Try the live demo <span aria-hidden="true">↘</span></a>
         </div>
       </div>
       <div class="hero-visual" aria-hidden="true">
@@ -86,16 +86,21 @@
       <div class="wrap">
         <div class="section-heading">
           <div><p class="section-label">03 / GET STARTED</p><h2 id="install-title">Bring it into <em>your Angular app.</em></h2></div>
-          <p>Three steps. No npm package yet — just the actual directive and a little global CSS.</p>
+          <p>One ZIP, three implementation files. No npm package required.</p>
         </div>
         <div class="install-grid">
           <article class="install-download">
             <span class="install-number">01 / SOURCE</span>
             <div class="file-mark" aria-hidden="true">TS</div>
-            <h3>Download the directive.</h3>
-            <p>Place the complete TypeScript file inside <code>src/app/directives/</code>.</p>
-            <a class="button button-primary download-button" href="downloads/rounded-selection.directive.ts" download="rounded-selection.directive.ts">Download .ts <span aria-hidden="true">↓</span></a>
-            <a class="under-link" href="https://github.com/gregorskof/RoundSelect/blob/main/src/app/directives/rounded-selection.directive.ts" target="_blank" rel="noopener noreferrer">View the source on GitHub ↗</a>
+            <h3>Download RoundSelect.</h3>
+            <p>Everything you need to integrate it into an Angular app, plus a short README.</p>
+            <a class="button button-primary download-button" href="downloads/roundselect.zip" download="roundselect.zip">Download complete ZIP <span aria-hidden="true">↓</span></a>
+            <div class="individual-downloads" aria-label="Individual source downloads">
+              <span>Or get individual files</span>
+              <a href="downloads/rounded-selection.directive.ts" download>Directive .ts ↗</a>
+              <a href="downloads/rounded-selection.css" download>Styles .css ↗</a>
+              <a href="downloads/app.example.ts" download>App example .ts ↗</a>
+            </div>
           </article>
           <article class="code-card">
             <div class="code-header"><span>02 / app.ts</span><button type="button" (click)="copyCode(setupCode, 'angular')">{{ copyFeedback() === 'angular' ? '✓ Copied' : 'Copy code' }}</button></div>

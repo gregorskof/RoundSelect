@@ -169,3 +169,9 @@ pre { overflow: auto; scrollbar-width: thin; scrollbar-color: #5c5074 #191826; m
   .hero-content, .soft-selection, .visual-caret, .new-paragraph { animation: none !important; }
   .button, .step, .swatch, .demo-surface, .source-link, .nav-links a, .inline-link { transition: none !important; }
 }
+
+/* Compact optional file links underneath the all-in-one ZIP. */
+.individual-downloads { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 19px; font-size: 11px; line-height: 1.5; }
+.individual-downloads span { flex-basis: 100%; color: #9b96ae; font-size: 11px; }
+.individual-downloads a { color: #c1a9ff; text-underline-offset: 4px; text-decoration: underline; text-decoration-color: #9272ff55; transition: color .2s ease, text-decoration-color .2s ease; }
+.individual-downloads a:hover { color: #fff; text-decoration-color: currentColor; }

@@ -29,11 +29,6 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              },
-              {
-                "glob": "rounded-selection.directive.ts",
-                "input": "src/app/directives",
-                "output": "/downloads/"
               }
             ],
             "index": "src/index.html",
@@ -42,6 +37,7 @@
             "polyfills": [],
             "scripts": [],
             "styles": [
+              "src/roundselect.css",
               "src/global_styles.css"
             ],
             "tsConfig": "tsconfig.app.json"
