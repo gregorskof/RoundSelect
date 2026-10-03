@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { RoundedSelectionDirective } from './directives/rounded-selection.directive';
 
 type DemoMode = 'dark' | 'light';
+type Snippet = 'angular' | 'css';
 
 @Component({
   selector: 'app-root',
@@ -14,24 +15,20 @@ export class App {
   readonly demoMode = signal<DemoMode>('dark');
   readonly selectedColor = signal('#9272ff');
   readonly showExtraLine = signal(false);
-  readonly copyMessage = signal('Copy snippet');
-  readonly copiedSnippet = signal<'angular' | 'css' | null>(null);
+  readonly copyFeedback = signal<Snippet | null>(null);
 
   readonly tones = [
     { name: 'Violet', value: '#9272ff' },
-    { name: 'Sky', value: '#42adf5' },
-    { name: 'Mint', value: '#39d7ad' },
-    { name: 'Coral', value: '#ff8d8f' },
+    { name: 'Azure', value: '#5aabff' },
+    { name: 'Mint', value: '#4ad7ae' },
+    { name: 'Rose', value: '#f28ca9' },
   ];
 
   readonly steps = [
-    { number: '01', title: 'Listen', label: 'selectionchange', detail: 'Watch for native selection, scroll and layout changes.' },
-    { number: '02', title: 'Read', label: 'Selection API', detail: 'Get the current selection without replacing its behavior.' },
-    { number: '03', title: 'Find', label: 'TreeWalker', detail: 'Visit the actual selected text nodes, not whole boxes.' },
-    { number: '04', title: 'Measure', label: 'Range.getClientRects()', detail: 'Collect the viewport coordinates of text fragments.' },
-    { number: '05', title: 'Merge', label: '2D geometry', detail: 'Join touching fragments on the same visual line.' },
-    { number: '06', title: 'Draw', label: 'SVG paths', detail: 'Build rounded corners and connectors between nearby lines.' },
-    { number: '07', title: 'Reveal', label: 'Native fallback', detail: 'Show the overlay, then hide the native highlight background.' },
+    { number: '01', title: 'Listen', detail: 'Track native text selection and layout changes.' },
+    { number: '02', title: 'Measure', detail: 'Collect selected fragments using Range and TreeWalker.' },
+    { number: '03', title: 'Draw', detail: 'Merge adjacent fragments into rounded SVG paths.' },
+    { number: '04', title: 'Enhance', detail: 'Display the overlay, preserving native fallbacks.' },
   ];
 
   readonly setupCode = `import { Component } from '@angular/core';
@@ -49,7 +46,7 @@ export class App {}`;
   readonly cssCode = `:root { --sel-bg: #9272ff; }
 
 ::selection {
-  background: var(--sel-bg, #9272ff);
+  background: var(--sel-bg);
   color: currentColor;
 }
 
@@ -67,8 +64,7 @@ html.rounded-selection-enabled
 .rounded-selection-overlay {
   position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   overflow: visible;
   z-index: 2147483647;
   pointer-events: none;
@@ -100,17 +96,16 @@ html.rounded-selection-enabled
   }
 
   toggleExtraLine(): void {
-    this.showExtraLine.update(current => !current);
+    this.showExtraLine.update(value => !value);
   }
 
-  async copyCode(code: string, snippet: 'angular' | 'css'): Promise<void> {
+  async copyCode(code: string, snippet: Snippet): Promise<void> {
     try {
       await navigator.clipboard.writeText(code);
-      this.copiedSnippet.set(snippet);
-      this.copyMessage.set('Copied!');
+      this.copyFeedback.set(snippet);
     } catch {
-      this.copiedSnippet.set(snippet);
-      this.copyMessage.set('Select manually');
+      // Snippets remain selectable so developers can copy manually.
+      this.copyFeedback.set(null);
     }
   }
 }

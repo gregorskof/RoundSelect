@@ -1,140 +1,118 @@
-<div class="site-shell">
+<div class="app-shell" id="top">
   <header class="site-header">
-    <div class="nav-inner">
+    <div class="wrap nav-inner">
       <a class="brand" href="#top" aria-label="RoundSelect home">
-        <span class="brand-icon" aria-hidden="true"><span></span><span></span></span>
-        <span>round<span class="brand-thin">select</span><span class="brand-period">.</span></span>
+        <span class="brand-symbol" aria-hidden="true"><i></i><i></i></span>
+        <span>round<span class="brand-light">select</span><span class="brand-dot">.</span></span>
       </a>
       <nav aria-label="Main navigation" class="nav-links">
-        <a href="#playground">Playground</a>
-        <a href="#how-it-works">How it works</a>
-        <a href="#install">Get started</a>
+        <a href="#demo">Demo</a>
+        <a href="#how">How it works</a>
+        <a href="#install">Install</a>
       </nav>
-      <a href="#install" class="nav-cta">Explore the code <span aria-hidden="true">↗</span></a>
+      <a class="source-link" href="https://github.com/gregorskof/RoundSelect" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
     </div>
   </header>
 
-  <main id="top">
+  <main>
     <section class="hero wrap" aria-labelledby="hero-title">
-      <div class="hero-copy">
-        <span class="eyebrow"><span class="status-dot"></span> AN ANGULAR + SVG EXPERIMENT</span>
-        <h1 id="hero-title">Text selection,<br /><span>with softer edges.</span></h1>
-        <p class="hero-lead">A reusable Angular directive that gives selected text smooth, connected corners. Real text. Native copying. No character-wrapping tricks.</p>
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="hero-content">
+        <p class="eyebrow"><span class="eyebrow-dot"></span> OPEN-SOURCE ANGULAR EXPERIMENT</p>
+        <h1 id="hero-title">Text selection.<br /><span>A little more human.</span></h1>
+        <p class="hero-description">A tiny visual detail, thoughtfully built. Smooth SVG highlights for real browser text selection — no text wrapping, no extra dependencies.</p>
         <div class="hero-actions">
-          <a class="primary-button" href="#playground">Try the live demo <span aria-hidden="true">↗</span></a>
-          <a class="secondary-button" href="#how-it-works">See how it works <span aria-hidden="true">↓</span></a>
-        </div>
-        <div class="hero-tags" aria-label="Highlights">
-          <span><i class="mini-check" aria-hidden="true">✓</i> Angular directive</span>
-          <span><i class="mini-check" aria-hidden="true">✓</i> Theme-aware</span>
-          <span><i class="mini-check" aria-hidden="true">✓</i> Native fallback</span>
+          <a class="button button-primary" href="#demo">Try the live demo <span aria-hidden="true">↘</span></a>
+          <a class="button button-quiet" href="downloads/rounded-selection.directive.ts" download="rounded-selection.directive.ts">Download directive <span aria-hidden="true">↓</span></a>
         </div>
       </div>
-      <div class="hero-art" aria-label="Illustration of rounded selection in a code editor">
-        <div class="glow glow-a"></div><div class="glow glow-b"></div>
-        <div class="art-window">
-          <div class="window-bar"><span class="traffic red"></span><span class="traffic yellow"></span><span class="traffic green"></span><span class="window-filename">selection.directive.ts</span><span class="window-icon">⌘</span></div>
-          <div class="art-code">
-            <div><span class="ln">01</span><span class="art-comment">// select something beautiful</span></div>
-            <div><span class="ln">02</span><span class="kw">const</span> selection = <span class="fn">window</span>.getSelection();</div>
-            <div><span class="ln">03</span></div>
-            <div class="highlighted"><span class="ln">04</span><span class="kw">const</span> fragments = range.getClientRects();</div>
-            <div class="highlighted continuation"><span class="ln">05</span><span class="kw">const</span> path = createRoundedPath(fragments);</div>
-            <div><span class="ln">06</span></div>
-            <div><span class="ln">07</span><span class="fn">render</span>(path); <span class="art-comment">// ✦</span></div>
-          </div>
-          <div class="art-bottom"><span class="art-indicator"></span> Angular + native browser APIs <span>UTF-8</span></div>
-        </div>
-        <div class="art-floating"><span class="floating-icon">⌁</span><span>Selection, refined.</span></div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="visual-label"><span></span> A SMALL DIFFERENCE</div>
+        <div class="visual-text">Make the ordinary<br /><span class="soft-selection">feel extraordinary.</span></div>
+        <div class="visual-caret"></div>
+        <div class="visual-caption">Native text. Softer edges.</div>
       </div>
     </section>
 
-    <section class="playground-band" id="playground" aria-labelledby="playground-title">
-      <div class="wrap">
-        <div class="section-heading center">
-          <span class="section-kicker">01 / EXPERIENCE IT</span>
-          <h2 id="playground-title">Words are better <em>selected.</em></h2>
-          <p>This is the actual directive running in your browser. Drag across a sentence or select multiple lines to see the rounded SVG overlay.</p>
-        </div>
-        <div class="playground-layout">
-          <aside class="control-panel" aria-label="Playground settings">
-            <div class="control-title"><span class="control-glyph">⚙</span> THE CONTROLS <span class="live-dot">LIVE</span></div>
-            <div class="control-body">
-              <div class="control-label">Selection color <span class="control-value">{{ selectedColor() }}</span></div>
-              <div class="color-options" role="group" aria-label="Selection color">
-                @for (tone of tones; track tone.value) {
-                  <button type="button" class="color-chip" [class.chosen]="selectedColor() === tone.value" [style.--chip-color]="tone.value" (click)="setColor(tone.value)" [attr.aria-pressed]="selectedColor() === tone.value" [attr.aria-label]="tone.name + ' selection color'">
-                    <span class="chip-dot"></span><span>{{ tone.name }}</span>
-                  </button>
-                }
-              </div>
-              <div class="control-separator"></div>
-              <div class="control-label">Preview surface</div>
-              <button type="button" class="mode-toggle" (click)="toggleMode()" [attr.aria-label]="'Switch to ' + (demoMode() === 'dark' ? 'light' : 'dark') + ' preview'">
-                <span>{{ demoMode() === 'dark' ? '☾' : '☼' }}</span>
-                {{ demoMode() === 'dark' ? 'Dark canvas' : 'Light canvas' }}
-                <span class="mode-switch"><i [class.right]="demoMode() === 'light'"></i></span>
-              </button>
-              <div class="control-separator"></div>
-              <div class="control-label">Dynamic Angular content</div>
-              <button type="button" class="add-content" (click)="toggleExtraLine()">{{ showExtraLine() ? '− Remove paragraph' : '+ Add a paragraph' }}</button>
-              <p class="control-help">New text works without reattaching the directive.</p>
-            </div>
-            <div class="control-footer"><span class="pulse-dot"></span> Native text selection is preserved.</div>
-          </aside>
-          <div class="preview-frame">
-            <div class="preview-toolbar"><span class="preview-caption"><span class="preview-eye">◉</span> LIVE PREVIEW</span><span class="preview-hint">HIGHLIGHT ANY TEXT ↙</span></div>
-            <div class="preview-surface" [class.preview-light]="demoMode() === 'light'" [style.--sel-bg]="selectedColor()">
-              <span class="preview-overline">THE ART OF THE LITTLE DETAILS</span>
-              <h3>Every pixel has<br />a purpose<span class="preview-period">.</span></h3>
-              <p>Try selecting <strong>these words right here</strong>, or drag your mouse across <em>multiple lines of text</em>. The directive measures the native selection and draws a smooth, rounded SVG highlight without changing the underlying HTML.</p>
-              <p>Even when you select <code>inline code</code>, <strong>bold phrases</strong>, or text that wraps naturally, the original content stays exactly where it belongs.</p>
-              @if (showExtraLine()) {
-                <p class="inserted-paragraph">✦ This paragraph was added dynamically by Angular. Try including it in your selection, too!</p>
-              }
-              <div class="preview-instruction"><span class="mouse-icon">↖</span> CLICK &amp; DRAG TO TRY IT YOURSELF</div>
-            </div>
-            <div class="preview-footnote"><span class="footnote-dot"></span> Want to copy text? Ctrl+C still works normally. <span class="demo-marker">REAL DOM • REAL SELECTION</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="how-section wrap" id="how-it-works" aria-labelledby="how-title">
+    <section class="demo-section wrap" id="demo" aria-labelledby="demo-title">
       <div class="section-heading">
-        <span class="section-kicker">02 / UNDER THE HOOD</span>
-        <h2 id="how-title">Seven steps.<br /><em>One smooth selection.</em></h2>
-        <p>No text wrapping or DOM surgery. RoundSelect uses the browser's own measurements to draw a separate decorative layer.</p>
+        <div><p class="section-label">01 / THE PLAYGROUND</p><h2 id="demo-title">Go on. <em>Select something.</em></h2></div>
+        <p>It's the real directive, running on this page. Drag across a few words or multiple lines.</p>
       </div>
-      <div class="flow-grid">
+      <div class="demo-card">
+        <div class="demo-toolbar">
+          <div class="toolbar-title"><span class="live-dot"></span> LIVE DEMO</div>
+          <div class="toolbar-actions">
+            <div class="palette" role="group" aria-label="Selection color">
+              @for (tone of tones; track tone.value) {
+                <button class="swatch" type="button" [style.--swatch]="tone.value" [class.active]="selectedColor() === tone.value" [attr.aria-pressed]="selectedColor() === tone.value" [attr.aria-label]="tone.name + ' highlight'" [title]="tone.name" (click)="setColor(tone.value)"><span></span></button>
+              }
+            </div>
+            <span class="toolbar-divider" aria-hidden="true"></span>
+            <button type="button" class="theme-switch" (click)="toggleMode()" [attr.aria-label]="'Switch to ' + (demoMode() === 'dark' ? 'light' : 'dark') + ' preview'">
+              <span aria-hidden="true">{{ demoMode() === 'dark' ? '☀' : '☾' }}</span> {{ demoMode() === 'dark' ? 'Light' : 'Dark' }} mode
+            </button>
+          </div>
+        </div>
+        <div class="demo-surface" [class.demo-light]="demoMode() === 'light'" [style.--sel-bg]="selectedColor()">
+          <p class="demo-eyebrow">THE BEAUTY OF SMALL DETAILS</p>
+          <h3>Everything feels better<br />with a <span>softer edge.</span></h3>
+          <p>Try highlighting <strong>these words right here</strong>, or select a few lines to see how RoundSelect turns the browser's native selection into a continuous, rounded SVG shape.</p>
+          <p>It works with <em>italic phrases</em>, <strong>bold text</strong>, and <code>inline code</code> — without wrapping or changing your original HTML.</p>
+          @if (showExtraLine()) {
+            <p class="new-paragraph">This paragraph was created dynamically by Angular. You can select it, too.</p>
+          }
+        </div>
+        <div class="demo-footer">
+          <span>Real text. Native copy and paste.</span>
+          <button class="text-action" type="button" (click)="toggleExtraLine()">{{ showExtraLine() ? '− Remove dynamic text' : '+ Add dynamic text' }}</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="how-section wrap" id="how" aria-labelledby="how-title">
+      <div class="section-heading">
+        <div><p class="section-label">02 / UNDER THE HOOD</p><h2 id="how-title">Simple idea. <em>Thoughtful geometry.</em></h2></div>
+        <a class="inline-link" href="selection-flow.png" target="_blank" rel="noopener noreferrer">See the full flow diagram <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="steps-grid">
         @for (step of steps; track step.number) {
-          <div class="flow-card"><span class="flow-number">{{ step.number }}</span><div class="flow-info"><span class="flow-label">{{ step.label }}</span><h3>{{ step.title }}</h3><p>{{ step.detail }}</p></div><span class="flow-arrow" aria-hidden="true">↘</span></div>
+          <article class="step"><span class="step-number">{{ step.number }}</span><h3>{{ step.title }}</h3><p>{{ step.detail }}</p></article>
         }
       </div>
-      <div class="flow-notice"><span class="notice-star">✳</span><span>The selection itself stays native. RoundSelect only changes how its background is painted.</span><a class="flow-image-link" href="selection-flow.png" target="_blank" rel="noopener noreferrer">View the illustrated flow ↗</a></div>
     </section>
 
-    <section class="features-band" aria-label="Why RoundSelect">
-      <div class="wrap features-grid">
-        <div class="feature"><div class="feature-icon">◇</div><h3>Your DOM, untouched.</h3><p>No per-character spans. The selected content remains the browser's real, accessible text.</p></div>
-        <div class="feature"><div class="feature-icon">◐</div><h3>Made for your theme.</h3><p>Use CSS variables to follow existing selection colors in light, dark, and custom themes.</p></div>
-        <div class="feature"><div class="feature-icon">↩</div><h3>Native when it matters.</h3><p>Editable fields, touch devices, high-contrast settings, and oversized selections can use browser highlighting.</p></div>
+    <section class="install-section" id="install" aria-labelledby="install-title">
+      <div class="wrap">
+        <div class="section-heading">
+          <div><p class="section-label">03 / GET STARTED</p><h2 id="install-title">Bring it into <em>your Angular app.</em></h2></div>
+          <p>Three steps. No npm package yet — just the actual directive and a little global CSS.</p>
+        </div>
+        <div class="install-grid">
+          <article class="install-download">
+            <span class="install-number">01 / SOURCE</span>
+            <div class="file-mark" aria-hidden="true">TS</div>
+            <h3>Download the directive.</h3>
+            <p>Place the complete TypeScript file inside <code>src/app/directives/</code>.</p>
+            <a class="button button-primary download-button" href="downloads/rounded-selection.directive.ts" download="rounded-selection.directive.ts">Download .ts <span aria-hidden="true">↓</span></a>
+            <a class="under-link" href="https://github.com/gregorskof/RoundSelect/blob/main/src/app/directives/rounded-selection.directive.ts" target="_blank" rel="noopener noreferrer">View the source on GitHub ↗</a>
+          </article>
+          <article class="code-card">
+            <div class="code-header"><span>02 / app.ts</span><button type="button" (click)="copyCode(setupCode, 'angular')">{{ copyFeedback() === 'angular' ? '✓ Copied' : 'Copy code' }}</button></div>
+            <p class="code-description">Register it globally on your root component.</p>
+            <pre><code>{{ setupCode }}</code></pre>
+          </article>
+        </div>
+        <article class="css-card">
+          <div class="css-description"><span class="install-number">03 / GLOBAL STYLESHEET</span><h3>Give the overlay its style.</h3><p>Paste these rules into your global <code>styles.css</code>, not a component-scoped stylesheet. Change <code>--sel-bg</code> to match your theme.</p></div>
+          <div class="css-code"><div class="code-header"><span>styles.css</span><button type="button" (click)="copyCode(cssCode, 'css')">{{ copyFeedback() === 'css' ? '✓ Copied' : 'Copy CSS' }}</button></div><pre><code>{{ cssCode }}</code></pre></div>
+        </article>
+        <p class="install-note">This is an experimental enhancement. Editable fields, touch devices, forced-colors mode and oversized selections retain native behavior.</p>
       </div>
     </section>
-
-    <section class="install-section wrap" id="install" aria-labelledby="install-title">
-      <div class="install-intro">
-        <div class="section-heading"><span class="section-kicker">03 / START BUILDING</span><h2 id="install-title">Bring it to<br /><em>your Angular app.</em></h2><p>This project is a working website and integration example, not a published npm package yet. Copy the directive and its global selection CSS from the source into your app.</p></div>
-        <div class="installation-steps"><p><span>1</span> Copy <code>rounded-selection.directive.ts</code> into your project.</p><p><span>2</span> Add the overlay rules to your global stylesheet.</p><p><span>3</span> Attach the directive once through <code>hostDirectives</code>.</p></div>
-        <a class="readme-link" href="https://angular.dev/guide/directives/directive-composition-api" target="_blank" rel="noopener noreferrer">About Angular host directives <span aria-hidden="true">↗</span></a>
-      </div>
-      <div class="snippet-stack">
-        <div class="snippet-card"><div class="snippet-bar"><span><span class="file-dot"></span> app.ts</span><button type="button" (click)="copyCode(setupCode, 'angular')">{{ copiedSnippet() === 'angular' ? copyMessage() : 'Copy snippet' }} <span aria-hidden="true">⧉</span></button></div><pre><code>{{ setupCode }}</code></pre></div>
-        <div class="snippet-card secondary-snippet"><div class="snippet-bar"><span><span class="file-dot purple-dot"></span> global_styles.css · excerpt</span><button type="button" (click)="copyCode(cssCode, 'css')">{{ copiedSnippet() === 'css' ? copyMessage() : 'Copy CSS' }} <span aria-hidden="true">⧉</span></button></div><pre><code>{{ cssCode }}</code></pre></div>
-      </div>
-    </section>
-
-    <section class="closing-band"><div class="wrap closing-inner"><div><span class="section-kicker">BUILT FOR A SMALL DETAIL</span><h2>Sometimes the little things<br />make the whole thing <em>feel right.</em></h2><p>An experiment in Angular, browser selection geometry and SVG—developed with AI assistance, and shared for learning.</p></div><a href="#playground" class="primary-button">Back to the playground ↑</a></div></section>
   </main>
-  <footer class="site-footer"><div class="wrap footer-inner"><a class="brand footer-brand" href="#top"><span class="brand-icon" aria-hidden="true"><span></span><span></span></span><span>round<span class="brand-thin">select</span><span class="brand-period">.</span></span></a><p>© 2026 RoundSelect. A project by <a href="https://gregorskof.github.io/MyPortfolio/" target="_blank" rel="noopener noreferrer">Gregor ↗</a></p><a href="#top" class="back-top">BACK TO TOP ↑</a></div></footer>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner"><span class="footer-wordmark">roundselect<span>.</span></span><p>An Angular + SVG experiment. Built with AI assistance.</p><div class="footer-links"><a href="https://gregorskof.github.io/MyPortfolio/" target="_blank" rel="noopener noreferrer">My portfolio ↗</a><a href="https://github.com/gregorskof/RoundSelect" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div></div>
+  </footer>
 </div>

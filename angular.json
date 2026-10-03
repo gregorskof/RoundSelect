@@ -25,13 +25,25 @@
             }
           },
           "options": {
-            "assets": [{ "glob": "**/*", "input": "public" }],
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              },
+              {
+                "glob": "rounded-selection.directive.ts",
+                "input": "src/app/directives",
+                "output": "/downloads/"
+              }
+            ],
             "index": "src/index.html",
             "browser": "src/main.ts",
             "outputPath": "dist/roundselect",
             "polyfills": [],
             "scripts": [],
-            "styles": ["src/global_styles.css"],
+            "styles": [
+              "src/global_styles.css"
+            ],
             "tsConfig": "tsconfig.app.json"
           }
         },
@@ -39,10 +51,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "development": {
-              "buildTarget": "demo:build:development"
+              "buildTarget": "roundselect:build:development"
             },
             "production": {
-              "buildTarget": "demo:build:production"
+              "buildTarget": "roundselect:build:production"
             }
           },
           "defaultConfiguration": "development"
