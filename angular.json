@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "cli": {
-    "analytics": "1e1de97b-a744-405a-8b5a-0397bb3d01ce"
+    "analytics": false
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -24,11 +24,13 @@
               "sourceMap": false
             }
           },
+          "defaultConfiguration": "production",
           "options": {
             "assets": [
               {
                 "glob": "**/*",
-                "input": "public"
+                "input": "public",
+                "ignore": ["fonts/fonts.css", "fonts/*.woff2"]
               }
             ],
             "index": "src/index.html",
@@ -37,6 +39,7 @@
             "polyfills": [],
             "scripts": [],
             "styles": [
+              "public/fonts/fonts.css",
               "src/roundselect.css",
               "src/global_styles.css"
             ],

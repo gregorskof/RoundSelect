@@ -1,51 +1,93 @@
-// Generate the website's downloadable files from the authoritative project source.
-// ZIP (uncompressed) is generated with built-in Node.js APIs: no extra dependencies.
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { join } from 'node:path';
+// Authoritative source -> individual files, compressed ZIP, and website example.
+// Only Node built-ins; reproducible paths, order, timestamps, and compression.
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { deflateRawSync } from 'node:zlib';
 
-const output = join(process.cwd(), 'public', 'downloads');
-mkdirSync(output, { recursive: true });
-const entries = [
-  ['rounded-selection.directive.ts', 'src/app/directives/rounded-selection.directive.ts'],
-  ['rounded-selection.css', 'src/roundselect.css'],
-  ['app.example.ts', 'examples/app.example.ts'],
-  ['README.md', 'distribution/README.md'],
-].map(([name, source]) => ({ name, data: readFileSync(join(process.cwd(), source)) }));
-for (const { name, data } of entries) writeFileSync(join(output, name), data);
-
-const crcTable = Array.from({length:256}, (_,n) => {
-  let c=n;
-  for(let k=0;k<8;k++) c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);
-  return c>>>0;
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const checkOnly = process.argv.includes('--check');
+const sources = [
+  { name: 'rounded-selection.directive.ts', source: 'src/app/directives/rounded-selection.directive.ts', type: 'TS' },
+  { name: 'rounded-selection.css', source: 'src/roundselect.css', type: 'CSS' },
+  { name: 'app.example.ts', source: 'examples/app.example.ts', type: 'TS' },
+  { name: 'README.md', source: 'distribution/README.md', type: 'MD' },
+];
+const entries = sources.map(file => ({ ...file, data: readFileSync(resolve(root, file.source)) }));
+const crcTable = Array.from({ length: 256 }, (_, value) => {
+  for (let bit = 0; bit < 8; bit++) value = (value & 1) ? (0xedb88320 ^ (value >>> 1)) : (value >>> 1);
+  return value >>> 0;
 });
 function crc32(bytes) {
-  let crc=0xffffffff;
-  for(const byte of bytes) crc=crcTable[(crc^byte)&255]^(crc>>>8);
-  return (crc^0xffffffff)>>>0;
+  let crc = 0xffffffff;
+  for (const byte of bytes) crc = crcTable[(crc ^ byte) & 255] ^ (crc >>> 8);
+  return (crc ^ 0xffffffff) >>> 0;
 }
-function makeZip(files) {
-  const body=[];const directory=[];let offset=0;
-  for(const {name,data} of files) {
-    const nameBytes=Buffer.from(name,'utf8'); const checksum=crc32(data);
-    const local=Buffer.alloc(30);
-    local.writeUInt32LE(0x04034b50,0);local.writeUInt16LE(20,4);local.writeUInt16LE(0x800,6);
-    local.writeUInt32LE(checksum,14);local.writeUInt32LE(data.length,18);local.writeUInt32LE(data.length,22);
-    local.writeUInt16LE(nameBytes.length,26);
-    body.push(local,nameBytes,data);
-    const central=Buffer.alloc(46);
-    central.writeUInt32LE(0x02014b50,0);central.writeUInt16LE(20,4);central.writeUInt16LE(20,6);
-    central.writeUInt16LE(0x800,8);central.writeUInt32LE(checksum,16);
-    central.writeUInt32LE(data.length,20);central.writeUInt32LE(data.length,24);
-    central.writeUInt16LE(nameBytes.length,28);central.writeUInt32LE(offset,42);
-    directory.push(central,nameBytes);
-    offset+=local.length+nameBytes.length+data.length;
+
+export function makeZip(files) {
+  const body = [];
+  const directory = [];
+  let offset = 0;
+  for (const { name, data } of files) {
+    const nameBytes = Buffer.from(`roundselect/${name}`, 'utf8');
+    const compressed = deflateRawSync(data, { level: 9 });
+    const checksum = crc32(data);
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt16LE(0x800, 6); // UTF-8 filenames.
+    local.writeUInt16LE(8, 8); // Deflate.
+    local.writeUInt16LE(33, 12); // Fixed DOS date: 1980-01-01.
+    local.writeUInt32LE(checksum, 14);
+    local.writeUInt32LE(compressed.length, 18);
+    local.writeUInt32LE(data.length, 22);
+    local.writeUInt16LE(nameBytes.length, 26);
+    body.push(local, nameBytes, compressed);
+
+    const central = Buffer.alloc(46);
+    central.writeUInt32LE(0x02014b50, 0);
+    central.writeUInt16LE(20, 4);
+    central.writeUInt16LE(20, 6);
+    central.writeUInt16LE(0x800, 8);
+    central.writeUInt16LE(8, 10);
+    central.writeUInt16LE(33, 14);
+    central.writeUInt32LE(checksum, 16);
+    central.writeUInt32LE(compressed.length, 20);
+    central.writeUInt32LE(data.length, 24);
+    central.writeUInt16LE(nameBytes.length, 28);
+    central.writeUInt32LE(offset, 42);
+    directory.push(central, nameBytes);
+    offset += local.length + nameBytes.length + compressed.length;
   }
-  const directoryBuffer=Buffer.concat(directory);
-  const end=Buffer.alloc(22);
-  end.writeUInt32LE(0x06054b50,0);
-  end.writeUInt16LE(files.length,8);end.writeUInt16LE(files.length,10);
-  end.writeUInt32LE(directoryBuffer.length,12);end.writeUInt32LE(offset,16);
-  return Buffer.concat([...body,directoryBuffer,end]);
+  const directoryBuffer = Buffer.concat(directory);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(files.length, 8);
+  end.writeUInt16LE(files.length, 10);
+  end.writeUInt32LE(directoryBuffer.length, 12);
+  end.writeUInt32LE(offset, 16);
+  return Buffer.concat([...body, directoryBuffer, end]);
 }
-writeFileSync(join(output,'roundselect.zip'),makeZip(entries));
-console.log(`Prepared RoundSelect download: ${entries.map(f=>f.name).join(', ')} + roundselect.zip`);
+
+const zip = makeZip(entries);
+const example = entries.find(file => file.name === 'app.example.ts').data.toString('utf8');
+const metadata = entries.map(({ name, type }) => ({ name, type }));
+const generated = `// Generated by scripts/prepare-downloads.mjs. Edit the source files instead.\nexport const INSTALL_EXAMPLE = ${JSON.stringify(example)};\nexport const DOWNLOAD_FILES = ${JSON.stringify(metadata, null, 2)} as const;\nexport const ZIP_SIZE = '${(zip.length / 1024).toFixed(1)} KB';\n`;
+const outputs = [
+  ...entries.map(({ name, data }) => ({ path: `public/downloads/${name}`, data })),
+  { path: 'public/downloads/roundselect.zip', data: zip },
+  { path: 'src/app/generated/installation.ts', data: Buffer.from(generated) },
+];
+
+for (const { path, data } of outputs) {
+  const target = resolve(root, path);
+  if (checkOnly) {
+    if (!existsSync(target) || !readFileSync(target).equals(data)) {
+      throw new Error(`${path} is missing or stale. Run npm run prepare:downloads.`);
+    }
+  } else {
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, data);
+  }
+}
+console.log(`${checkOnly ? 'Verified' : 'Prepared'} four source downloads, roundselect/ ZIP (${zip.length} bytes), and synchronized component example.`);

@@ -1,8 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { RoundedSelectionDirective } from './directives/rounded-selection.directive';
+import { INSTALL_EXAMPLE, DOWNLOAD_FILES, ZIP_SIZE } from './generated/installation';
 
-type DemoMode = 'dark' | 'light';
-type Snippet = 'angular' | 'css';
+type PreviewMode = 'light' | 'dark';
+type Sample = 'prose' | 'markup';
+type Snippet = 'styles' | 'component';
 
 @Component({
   selector: 'app-root',
@@ -12,100 +14,67 @@ type Snippet = 'angular' | 'css';
   styleUrl: './app.css',
 })
 export class App {
-  readonly demoMode = signal<DemoMode>('dark');
+  readonly previewMode = signal<PreviewMode>('light');
+  readonly sample = signal<Sample>('prose');
   readonly selectedColor = signal('#9272ff');
-  readonly showExtraLine = signal(false);
-  readonly copyFeedback = signal<Snippet | null>(null);
+  readonly showDynamic = signal(false);
+  readonly copied = signal<Snippet | null>(null);
+  readonly copyStatus = signal('');
+  readonly downloadFiles = DOWNLOAD_FILES;
+  readonly zipSize = ZIP_SIZE;
+  readonly componentCode = INSTALL_EXAMPLE;
+  readonly stylesCode = `/* src/styles.css — before other rules */
+@import './rounded-selection.css';
+
+/* Optional: match your theme. */
+:root { --sel-bg: #9272ff; }`;
 
   readonly tones = [
     { name: 'Violet', value: '#9272ff' },
-    { name: 'Azure', value: '#5aabff' },
+    { name: 'Blue', value: '#5aabff' },
     { name: 'Mint', value: '#4ad7ae' },
     { name: 'Rose', value: '#f28ca9' },
   ];
 
-  readonly steps = [
-    { number: '01', title: 'Listen', detail: 'Track native text selection and layout changes.' },
-    { number: '02', title: 'Measure', detail: 'Collect selected fragments using Range and TreeWalker.' },
-    { number: '03', title: 'Draw', detail: 'Merge adjacent fragments into rounded SVG paths.' },
-    { number: '04', title: 'Enhance', detail: 'Display the overlay, preserving native fallbacks.' },
+  readonly stages = [
+    { title: 'Listen', api: 'selectionchange', detail: 'Listen for selection changes, scrolling, and layout updates.' },
+    { title: 'Read', api: 'Selection', detail: 'Read the browser’s native selection and its active range.' },
+    { title: 'Walk', api: 'TreeWalker', detail: 'Find the selected text nodes, including nested inline elements.' },
+    { title: 'Measure', api: 'Range', detail: 'Measure each selected text fragment in viewport coordinates.' },
+    { title: 'Merge', api: 'Visual lines', detail: 'Join nearby fragments that belong to the same visual line.' },
+    { title: 'Shape', api: 'SVG paths', detail: 'Build rounded paths and connecting segments between close lines.' },
+    { title: 'Render', api: 'Overlay', detail: 'Render the SVG, then hide the native highlight only when ready.' },
   ];
 
-  readonly setupCode = `import { Component } from '@angular/core';
-import { RoundedSelectionDirective } from './directives/rounded-selection.directive';
+  private readonly destroyRef = inject(DestroyRef);
+  private feedbackTimer: ReturnType<typeof setTimeout> | undefined;
 
-@Component({
-  selector: 'app-root',
-  standalone: true,
-  hostDirectives: [RoundedSelectionDirective],
-  templateUrl: './app.html',
-  styleUrl: './app.css',
-})
-export class App {}`;
-
-  readonly cssCode = `:root { --sel-bg: #9272ff; }
-
-::selection {
-  background: var(--sel-bg);
-  color: currentColor;
-}
-
-html.rounded-selection-enabled ::selection {
-  background: transparent !important;
-  color: currentColor !important;
-}
-
-html.rounded-selection-enabled
-:is(input, textarea, [contenteditable])::selection {
-  background: Highlight !important;
-  color: HighlightText !important;
-}
-
-.rounded-selection-overlay {
-  position: fixed;
-  inset: 0;
-  width: 100%; height: 100%;
-  overflow: visible;
-  z-index: 2147483647;
-  pointer-events: none;
-  user-select: none;
-}
-
-.rounded-selection-shape {
-  fill: rgba(146, 114, 255, .4);
-  fill: color-mix(in srgb,
-    var(--highlight-color, #9272ff) 40%, transparent);
-  pointer-events: none;
-}
-
-@media (hover: none) and (pointer: coarse),
-       (forced-colors: active) {
-  .rounded-selection-overlay { display: none !important; }
-  html.rounded-selection-enabled ::selection {
-    background: Highlight !important;
-    color: HighlightText !important;
-  }
-}`;
-
-  setColor(color: string): void {
-    this.selectedColor.set(color);
+  constructor() {
+    this.destroyRef.onDestroy(() => clearTimeout(this.feedbackTimer));
   }
 
-  toggleMode(): void {
-    this.demoMode.update(mode => mode === 'dark' ? 'light' : 'dark');
+  // Preserve a mouse selection while changing its color; keyboard focus stays native.
+  keepSelection(event: PointerEvent): void {
+    if (event.pointerType === 'mouse') event.preventDefault();
   }
 
-  toggleExtraLine(): void {
-    this.showExtraLine.update(value => !value);
+  toggleDynamic(): void {
+    this.showDynamic.update(value => !value);
   }
 
   async copyCode(code: string, snippet: Snippet): Promise<void> {
+    clearTimeout(this.feedbackTimer);
     try {
       await navigator.clipboard.writeText(code);
-      this.copyFeedback.set(snippet);
+      this.copied.set(snippet);
+      this.copyStatus.set(snippet === 'styles' ? 'Stylesheet example copied.' : 'Component example copied. Merge it into your existing component.');
     } catch {
-      // Snippets remain selectable so developers can copy manually.
-      this.copyFeedback.set(null);
+      this.copied.set(null);
+      this.copyStatus.set('Clipboard unavailable. Select the code and copy it with Ctrl+C or Command+C.');
     }
+    this.feedbackTimer = setTimeout(() => {
+      this.copied.set(null);
+      this.copyStatus.set('');
+    }, 4000);
   }
 }

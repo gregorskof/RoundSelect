@@ -6,6 +6,11 @@
     "start": "ng serve",
     "build": "ng build",
     "prepare:downloads": "node scripts/prepare-downloads.mjs",
+    "check:downloads": "node scripts/prepare-downloads.mjs --check",
+    "build:pages": "npm run build -- --configuration production --base-href /RoundSelect/",
+    "check:pages": "node scripts/check-pages.mjs",
+    "test:browser": "node scripts/verify-browser.mjs",
+    "prestart": "npm run prepare:downloads",
     "prebuild": "npm run prepare:downloads"
   },
   "dependencies": {
