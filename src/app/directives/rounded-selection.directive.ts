@@ -24,6 +24,7 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const MAX_TEXT_NODES = 1400;
 const MAX_FRAGMENTS = 280;
 const CORNER_RADIUS = 5;
+const VERTICAL_OFFSET = 1.5;
 
 /**
  * Global visual enhancement for native text selection.
@@ -116,12 +117,16 @@ export class RoundedSelectionDirective implements OnInit, OnDestroy {
 
     const selection = this.doc.getSelection();
     const active = this.doc.activeElement;
-    const nativePreferred = this.coarsePointer?.matches || this.forcedColors?.matches;
+    const nativePreferred =
+      this.coarsePointer?.matches || this.forcedColors?.matches;
 
     // Native selection works better with mobile selection handles, editable fields,
     // and operating-system high-contrast themes.
     if (
-      nativePreferred || !selection || selection.isCollapsed || !selection.rangeCount ||
+      nativePreferred ||
+      !selection ||
+      selection.isCollapsed ||
+      !selection.rangeCount ||
       active?.matches('input, textarea, select')
     ) {
       this.clearSelection();
@@ -130,8 +135,11 @@ export class RoundedSelectionDirective implements OnInit, OnDestroy {
 
     const range = selection.getRangeAt(0);
     const host = this.host.nativeElement;
-    if (!host.contains(range.commonAncestorContainer) ||
-        this.isEditable(range.startContainer) || this.isEditable(range.endContainer)) {
+    if (
+      !host.contains(range.commonAncestorContainer) ||
+      this.isEditable(range.startContainer) ||
+      this.isEditable(range.endContainer)
+    ) {
       this.clearSelection();
       return;
     }
@@ -144,8 +152,14 @@ export class RoundedSelectionDirective implements OnInit, OnDestroy {
 
     const measureText = (node: Text): void => {
       if (overflow || !node.length || !range.intersectsNode(node)) return;
-      if (++visited > MAX_TEXT_NODES) { overflow = true; return; }
-      if (this.isEditable(node)) { containsEditable = true; return; }
+      if (++visited > MAX_TEXT_NODES) {
+        overflow = true;
+        return;
+      }
+      if (this.isEditable(node)) {
+        containsEditable = true;
+        return;
+      }
 
       const part = this.doc.createRange();
       part.selectNodeContents(node);
@@ -156,14 +170,23 @@ export class RoundedSelectionDirective implements OnInit, OnDestroy {
       const parent = node.parentElement;
       const computed = parent ? getComputedStyle(parent) : null;
       // --sel-bg lets a site's existing selection theme drive this overlay.
-      const color = computed?.getPropertyValue('--sel-bg').trim() ||
-        computed?.getPropertyValue('--rounded-selection-color').trim() || '#3b82f6';
+      const color =
+        computed?.getPropertyValue('--sel-bg').trim() ||
+        computed?.getPropertyValue('--rounded-selection-color').trim() ||
+        '#3b82f6';
 
       for (const box of Array.from(part.getClientRects())) {
         if (box.width <= 0 || box.height <= 0) continue;
-        if (fragments.length >= MAX_FRAGMENTS) { overflow = true; return; }
+        if (fragments.length >= MAX_FRAGMENTS) {
+          overflow = true;
+          return;
+        }
         fragments.push({
-          left: box.left, top: box.top, right: box.right, bottom: box.bottom, color,
+          left: box.left,
+          top: box.top + VERTICAL_OFFSET,
+          right: box.right,
+          bottom: box.bottom + VERTICAL_OFFSET,
+          color,
         });
       }
     };
@@ -179,11 +202,12 @@ export class RoundedSelectionDirective implements OnInit, OnDestroy {
           {
             acceptNode: (node: Node): number => {
               if (!range.intersectsNode(node)) return NodeFilter.FILTER_REJECT;
-              if (node.nodeType === Node.TEXT_NODE) return NodeFilter.FILTER_ACCEPT;
+              if (node.nodeType === Node.TEXT_NODE)
+                return NodeFilter.FILTER_ACCEPT;
               // A selected element may contain other selected text descendants.
               return NodeFilter.FILTER_SKIP;
             },
-          },
+          }
         );
         while (walker.nextNode()) {
           measureText(walker.currentNode as Text);
@@ -228,8 +252,14 @@ export class RoundedSelectionDirective implements OnInit, OnDestroy {
             if (right - left < 8) continue;
 
             const inset = Math.min(CORNER_RADIUS, height / 3);
-            d.push(this.rectPath(left, upper.bottom - inset,
-              right, lower.top + inset));
+            d.push(
+              this.rectPath(
+                left,
+                upper.bottom - inset,
+                right,
+                lower.top + inset
+              )
+            );
           }
         }
 
@@ -242,7 +272,11 @@ export class RoundedSelectionDirective implements OnInit, OnDestroy {
 
       this.overlay.replaceChildren(graphics);
       // Important: keep native highlighting until a valid custom path exists.
-      if (!this.doc.documentElement.classList.contains('rounded-selection-enabled')) {
+      if (
+        !this.doc.documentElement.classList.contains(
+          'rounded-selection-enabled'
+        )
+      ) {
         this.doc.documentElement.classList.add('rounded-selection-enabled');
       }
     } catch {
@@ -253,14 +287,29 @@ export class RoundedSelectionDirective implements OnInit, OnDestroy {
 
   /** Combine horizontally touching fragments on a matching text line. */
   private combineFragments(rects: SelectionRect[]): SelectionRow[] {
-    const lines: { color: string; top: number; bottom: number; center: number; items: SelectionRect[] }[] = [];
-    for (const rect of [...rects].sort((a, b) => a.top - b.top || a.left - b.left)) {
+    const lines: {
+      color: string;
+      top: number;
+      bottom: number;
+      center: number;
+      items: SelectionRect[];
+    }[] = [];
+    for (const rect of [...rects].sort(
+      (a, b) => a.top - b.top || a.left - b.left
+    )) {
       const center = (rect.top + rect.bottom) / 2;
       const line = lines.find((item) => {
-        const intersection = Math.min(rect.bottom, item.bottom) - Math.max(rect.top, item.top);
-        const minHeight = Math.min(rect.bottom - rect.top, item.bottom - item.top);
-        return item.color === rect.color && intersection >= minHeight * 0.68 &&
-          Math.abs(center - item.center) <= Math.max(3, minHeight * 0.24);
+        const intersection =
+          Math.min(rect.bottom, item.bottom) - Math.max(rect.top, item.top);
+        const minHeight = Math.min(
+          rect.bottom - rect.top,
+          item.bottom - item.top
+        );
+        return (
+          item.color === rect.color &&
+          intersection >= minHeight * 0.68 &&
+          Math.abs(center - item.center) <= Math.max(3, minHeight * 0.24)
+        );
       });
       if (line) {
         line.items.push(rect);
@@ -268,8 +317,13 @@ export class RoundedSelectionDirective implements OnInit, OnDestroy {
         line.bottom = Math.max(line.bottom, rect.bottom);
         line.center = (line.top + line.bottom) / 2;
       } else {
-        lines.push({ color: rect.color, top: rect.top, bottom: rect.bottom, center,
-          items: [rect] });
+        lines.push({
+          color: rect.color,
+          top: rect.top,
+          bottom: rect.bottom,
+          center,
+          items: [rect],
+        });
       }
     }
 
@@ -297,27 +351,44 @@ export class RoundedSelectionDirective implements OnInit, OnDestroy {
     const { left: x, top: y, right, bottom } = box;
     const radius = Math.min(CORNER_RADIUS, (right - x) / 2, (bottom - y) / 2);
     return [
-      `M ${x + radius} ${y}`, `H ${right - radius}`,
+      `M ${x + radius} ${y}`,
+      `H ${right - radius}`,
       `Q ${right} ${y} ${right} ${y + radius}`,
-      `V ${bottom - radius}`, `Q ${right} ${bottom} ${right - radius} ${bottom}`,
-      `H ${x + radius}`, `Q ${x} ${bottom} ${x} ${bottom - radius}`,
-      `V ${y + radius}`, `Q ${x} ${y} ${x + radius} ${y}`, 'Z',
+      `V ${bottom - radius}`,
+      `Q ${right} ${bottom} ${right - radius} ${bottom}`,
+      `H ${x + radius}`,
+      `Q ${x} ${bottom} ${x} ${bottom - radius}`,
+      `V ${y + radius}`,
+      `Q ${x} ${y} ${x + radius} ${y}`,
+      'Z',
     ].join(' ');
   }
 
-  private rectPath(left: number, top: number, right: number, bottom: number): string {
+  private rectPath(
+    left: number,
+    top: number,
+    right: number,
+    bottom: number
+  ): string {
     return `M ${left} ${top} H ${right} V ${bottom} H ${left} Z`;
   }
 
   private isEditable(node: Node): boolean {
-    const element = node.nodeType === Node.ELEMENT_NODE
-      ? node as HTMLElement : node.parentElement;
-    return !!element?.isContentEditable || !!element?.closest('input, textarea, select');
+    const element =
+      node.nodeType === Node.ELEMENT_NODE
+        ? (node as HTMLElement)
+        : node.parentElement;
+    return (
+      !!element?.isContentEditable ||
+      !!element?.closest('input, textarea, select')
+    );
   }
 
   private clearSelection(): void {
     this.overlay?.replaceChildren();
-    if (this.doc.documentElement.classList.contains('rounded-selection-enabled')) {
+    if (
+      this.doc.documentElement.classList.contains('rounded-selection-enabled')
+    ) {
       this.doc.documentElement.classList.remove('rounded-selection-enabled');
     }
   }
